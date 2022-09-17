@@ -30,12 +30,19 @@ for i in ${name_usb[*]}; do
 		menu_usb_dev="${menu_usb_dev} ${dev_usb[*]} $usb_info"
 	fi
 done
-if [[ ${menu_usb_dev} != "" ]]; then
-	variables=$(Xdialog --stdout --backtitle "$SYSTEM $VERSION $ARCHI" --title "Извлечение флешек" --menu "\nМеню выбора флешки для извлечения\n" 0 0 10 ${menu_usb_dev})
-	if [[ ${variables} != "" ]]; then
+wait
+declare -a dev_menu_usb
+wait
+dev_menu_usb=( $menu_usb_dev )
+wait
+unset menu_usb_dev
+wait
+if [[ "${dev_menu_usb[*]}" != "" ]]; then
+	variables=$(zenity --title="звлечение флешек" --text="\nМеню выбора флешки для извлечения\n" --width=256 --height=256 --list --column="Device" --column="Info"  "${dev_menu_usb[@]}")
+	if [[ "${variables[*]}" != "" ]]; then
 		udisksctl unmount --block-device /dev/"${variables[*]}"
 		wait
-		udisksctl power-off --block-device /dev/"${variables}"
+		udisksctl power-off --block-device /dev/"${variables[*]}"
 		wait
 		notify-send --urgency normal --expire-time=10000 -i "$_the_icon" "Извлечение USB устройства." "Ваше USB устройство <b>/dev/${variables}</b> может быть извлечено!"
 	fi
